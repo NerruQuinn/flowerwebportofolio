@@ -8,7 +8,7 @@ const stats = [
 
 const About = () => {
   return (
-    <section className="relative py-section-padding px-6 md:px-12 lg:px-24 bg-surface" id="about">
+    <section className="relative py-section-padding px-4 md:px-12 lg:px-24 bg-surface" id="about">
       <div
         style={{
           position: 'absolute',
@@ -29,7 +29,7 @@ const About = () => {
           <p className="font-label-md text-xs md:text-sm uppercase tracking-widest text-on-surface-variant mb-4">
             Because I obsess over every detail.
           </p>
-          <h3 className="font-display-lg text-4xl md:text-6xl lg:text-8xl text-outline">
+          <h3 className="font-display-lg w-full text-3xl sm:text-4xl md:text-6xl lg:text-8xl whitespace-normal break-words text-outline">
             <span className="inline-flex">
               <span className="about-heading-left inline-block">Discipline</span>
               <span className="mx-2">&amp;</span>

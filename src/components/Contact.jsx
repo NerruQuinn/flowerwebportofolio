@@ -5,7 +5,6 @@ const socialLinks = [
   { label: 'joshuabart1306@gmail.com', href: 'mailto:joshuabart1306@gmail.com' },
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/joshua-bartimeus/' },
   { label: 'GitHub', href: 'https://github.com/NerruQuinn' },
-  { label: 'Read.cv', href: '#' },
 ];
 
 const Contact = () => {
