@@ -6,91 +6,82 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 gsap.registerPlugin(ScrollToPlugin);
 
 const frameCount = 240;
-const imageUrls = [];
-for (let i = 1; i <= frameCount; i++) {
-  const num = i.toString().padStart(3, '0');
-  imageUrls.push(new URL(`../assets/backframe/frame_${num}.webp`, import.meta.url).href);
-}
 
 const Hero = () => {
   const canvasRef = useRef(null);
+  const videoRef = useRef(null);
   const containerRef = useRef(null);
   const canvasWrapperRef = useRef(null);
   const gradientOverlayRef = useRef(null);
-  const imagesRef = useRef(new Array(frameCount));
-  const currentFrameRef = useRef(0);
   const rafRef = useRef(null);
   const [loadedCount, setLoadedCount] = useState(0);
   const isLoaded = loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
 
-  // Preload all frames into memory
+  // Video metadata loader — mark as loaded when metadata is available
   useEffect(() => {
-    let loaded = 0;
-    imageUrls.forEach((url, index) => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => {
-        imagesRef.current[index] = img;
-        loaded++;
-        setLoadedCount(loaded);
-      };
-      img.onerror = () => {
-        loaded++;
-        setLoadedCount(loaded);
-      };
-    });
+    const video = videoRef.current;
+    if (!video) return;
+    const onLoaded = () => {
+      setLoadedCount(frameCount);
+      // draw initial frame once video can play
+      requestAnimationFrame(() => drawFrame());
+    };
+
+    video.addEventListener('canplay', onLoaded);
+    // If video is already ready, trigger immediately
+    if (video.readyState >= 3) onLoaded();
+    // Ensure browser starts loading the video
+    try { video.load(); } catch (e) {}
+
+    return () => video.removeEventListener('canplay', onLoaded);
   }, []);
 
-  // Draw a specific frame to the canvas with cover-fit + zoom
-  const drawFrame = useCallback((index) => {
+  // Draw current video frame to the canvas with cover-fit + zoom
+  const drawFrame = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const video = videoRef.current;
+    if (!canvas || !video) return;
+    if (video.readyState < 1) return; // HAVE_METADATA
     const ctx = canvas.getContext('2d');
-    const img = imagesRef.current[index];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
 
-    // Retina/High-DPI scaling (Ini akan fix gambar pecah)
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    
-    // Set actual canvas resolution multiplied by DPR
+
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    
-    // Normalize coordinate system to use CSS pixels
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Enforce high-quality smoothing
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // NO artificial zoom (1.0) to prevent pixelation of original frames
-    const ZOOM = 1.0;
     const cAspect = rect.width / rect.height;
-    const iAspect = img.width / img.height;
-
+    const iAspect = video.videoWidth / video.videoHeight || 16 / 9;
     let dw, dh;
     if (cAspect > iAspect) {
-      dw = rect.width * ZOOM;
-      dh = (rect.width / iAspect) * ZOOM;
+      dw = rect.width;
+      dh = rect.width / iAspect;
     } else {
-      dh = rect.height * ZOOM;
-      dw = (rect.height * iAspect) * ZOOM;
+      dh = rect.height;
+      dw = rect.height * iAspect;
     }
 
     const ox = (rect.width - dw) / 2;
     const oy = (rect.height - dh) / 2;
 
     ctx.clearRect(0, 0, rect.width, rect.height);
-    ctx.drawImage(img, ox, oy, dw, dh);
+    try {
+      ctx.drawImage(video, ox, oy, dw, dh);
+    } catch (e) {
+      // drawImage can throw if video isn't ready — ignore
+    }
   }, []);
 
   // Scroll-driven frame sequencing + canvas visibility
   useEffect(() => {
     if (!isLoaded || !canvasRef.current || !containerRef.current) return;
 
-    drawFrame(0);
+    drawFrame();
 
     const onScroll = () => {
       const container = containerRef.current;
@@ -119,15 +110,25 @@ const Hero = () => {
         overlay.style.opacity = String(fadeOpacity);
       }
 
-      const idx = Math.min(frameCount - 1, Math.floor(fraction * frameCount));
-      if (idx !== currentFrameRef.current) {
-        currentFrameRef.current = idx;
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => drawFrame(idx));
+      const video = videoRef.current;
+      if (video && video.duration) {
+        // Sync video to scroll progress
+        const targetTime = fraction * video.duration;
+        try {
+          if (typeof video.fastSeek === 'function') {
+            video.fastSeek(targetTime);
+          } else {
+            video.currentTime = targetTime;
+          }
+        } catch (e) {
+          // setting currentTime can throw on some browsers if not ready
+        }
       }
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => drawFrame());
     };
 
-    const onResize = () => drawFrame(currentFrameRef.current);
+    const onResize = () => drawFrame();
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
@@ -199,6 +200,14 @@ const Hero = () => {
         className="fixed inset-0 w-full h-full bg-black overflow-hidden z-10 pointer-events-none"
         style={{ transition: 'opacity 0.6s ease' }}
       >
+        <video
+            ref={videoRef}
+            src={new URL('../assets/videohero-seekable.mp4', import.meta.url).href}
+            preload="auto"
+            muted
+            playsInline
+            style={{ display: 'none' }}
+          />
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full"
