@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import MagneticElement from './MagneticElement';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -8,12 +8,10 @@ gsap.registerPlugin(ScrollToPlugin);
 const frameCount = 240;
 
 const Hero = () => {
-  const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
-  const canvasWrapperRef = useRef(null);
+  const wrapperRef = useRef(null);
   const gradientOverlayRef = useRef(null);
-  const rafRef = useRef(null);
   const [loadedCount, setLoadedCount] = useState(0);
   const isLoaded = loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
@@ -22,77 +20,38 @@ const Hero = () => {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const onLoaded = () => {
+
+    const handleLoaded = () => {
       setLoadedCount(frameCount);
-      // draw initial frame once video can play
-      requestAnimationFrame(() => drawFrame());
     };
 
-    video.addEventListener('canplay', onLoaded);
-    // If video is already ready, trigger immediately
-    if (video.readyState >= 3) onLoaded();
-    // Ensure browser starts loading the video
+    video.addEventListener('canplay', handleLoaded);
+    video.addEventListener('loadedmetadata', handleLoaded);
+    if (video.readyState >= 3) handleLoaded();
     try { video.load(); } catch (e) {}
 
-    return () => video.removeEventListener('canplay', onLoaded);
+    return () => {
+      video.removeEventListener('canplay', handleLoaded);
+      video.removeEventListener('loadedmetadata', handleLoaded);
+    };
   }, []);
 
-  // Draw current video frame to the canvas with cover-fit + zoom
-  const drawFrame = useCallback(() => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    if (!canvas || !video) return;
-    if (video.readyState < 1) return; // HAVE_METADATA
-    const ctx = canvas.getContext('2d');
-
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    const cAspect = rect.width / rect.height;
-    const iAspect = video.videoWidth / video.videoHeight || 16 / 9;
-    let dw, dh;
-    if (cAspect > iAspect) {
-      dw = rect.width;
-      dh = rect.width / iAspect;
-    } else {
-      dh = rect.height;
-      dw = rect.height * iAspect;
-    }
-
-    const ox = (rect.width - dw) / 2;
-    const oy = (rect.height - dh) / 2;
-
-    ctx.clearRect(0, 0, rect.width, rect.height);
-    try {
-      ctx.drawImage(video, ox, oy, dw, dh);
-    } catch (e) {
-      // drawImage can throw if video isn't ready — ignore
-    }
-  }, []);
-
-  // Scroll-driven frame sequencing + canvas visibility
+  // Scroll-driven video seeking and wrapper visibility
   useEffect(() => {
-    if (!isLoaded || !canvasRef.current || !containerRef.current) return;
+    if (!isLoaded || !containerRef.current || !wrapperRef.current) return;
 
-    drawFrame();
+    let lastScrollTime = 0;
+    const THROTTLE_MS = window.innerWidth < 768 ? 32 : 16;
 
-    const onScroll = () => {
+    const updateWrapperVisibility = () => {
       const container = containerRef.current;
-      const wrapper = canvasWrapperRef.current;
+      const wrapper = wrapperRef.current;
       const overlay = gradientOverlayRef.current;
       if (!container || !wrapper) return;
 
       const containerBottom = container.offsetTop + container.offsetHeight;
       const scrollY = window.scrollY;
 
-      // Hide canvas once we scroll past the hero container
       if (scrollY >= containerBottom - window.innerHeight * 0.1) {
         wrapper.style.opacity = '0';
         wrapper.style.pointerEvents = 'none';
@@ -101,7 +60,6 @@ const Hero = () => {
         wrapper.style.pointerEvents = 'auto';
       }
 
-      // Calculate frame index based on scroll within the container
       const maxScroll = container.scrollHeight - window.innerHeight;
       const fraction = Math.max(0, Math.min(1, scrollY / maxScroll));
       const fadeStart = 0.7;
@@ -112,7 +70,6 @@ const Hero = () => {
 
       const video = videoRef.current;
       if (video && video.duration) {
-        // Sync video to scroll progress
         const targetTime = fraction * video.duration;
         try {
           if (typeof video.fastSeek === 'function') {
@@ -124,28 +81,30 @@ const Hero = () => {
           // setting currentTime can throw on some browsers if not ready
         }
       }
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => drawFrame());
     };
 
-    const onResize = () => drawFrame();
+    const onScroll = () => {
+      if (Date.now() - lastScrollTime < THROTTLE_MS) return;
+      lastScrollTime = Date.now();
+      updateWrapperVisibility();
+    };
+
+    const onResize = () => updateWrapperVisibility();
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
-    
-    // Ensure it fires once
+
     onScroll();
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
-      cancelAnimationFrame(rafRef.current);
     };
-  }, [isLoaded, drawFrame]);
+  }, [isLoaded]);
 
-  // Mouse-follow parallax on canvas
+  // Mouse-follow parallax on video
   useEffect(() => {
-    if (!isLoaded || !canvasRef.current) return;
+    if (!isLoaded || !videoRef.current) return;
 
     // Trigger hero text entrance animations once loading is done
     gsap.fromTo(
@@ -157,7 +116,7 @@ const Hero = () => {
     const onMouseMove = (e) => {
       const xOff = (e.clientX / window.innerWidth - 0.5) * 30;
       const yOff = (e.clientY / window.innerHeight - 0.5) * 30;
-      gsap.to(canvasRef.current, {
+      gsap.to(videoRef.current, {
         x: -xOff,
         y: -yOff,
         duration: 1.2,
@@ -194,24 +153,26 @@ const Hero = () => {
         </div>
       )}
 
-      {/* ─── Fixed Canvas — fades out when scrolled past hero zone ─── */}
+      {/* ─── Fixed Video — fades out when scrolled past hero zone ─── */}
       <div
-        ref={canvasWrapperRef}
+        ref={wrapperRef}
         className="fixed inset-0 w-full h-full bg-black overflow-hidden z-10 pointer-events-none"
         style={{ transition: 'opacity 0.6s ease' }}
       >
         <video
-            ref={videoRef}
-            src={new URL('../assets/videohero-seekable.mp4', import.meta.url).href}
-            preload="auto"
-            muted
-            playsInline
-            style={{ display: 'none' }}
-          />
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          style={{ transform: 'scale(1.03)' }} // Minimal scale just to hide parallax edges
+          ref={videoRef}
+          src={new URL('../assets/videohero-seekable.mp4', import.meta.url).href}
+          preload="auto"
+          muted
+          playsInline
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: 'scale(1.03)',
+          }}
         />
         {/* Vignette */}
         <div
@@ -243,7 +204,7 @@ const Hero = () => {
         style={{ height: '500vh' }}
         data-nav-theme="dark"
       >
-        {/* Hero Content — z-20 above canvas */}
+        {/* Hero Content — z-20 above video */}
         <div className="sticky top-0 h-screen flex flex-col justify-center items-center relative px-margin-mobile text-center z-20">
           <div className="max-w-[1280px] w-full flex flex-col items-center">
             <div style={{
