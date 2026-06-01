@@ -1,0 +1,357 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #fafaf5;
+  --surface-dim: #dadad5;
+  --surface-bright: #fafaf5;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f4f4ef;
+  --surface-container: #eeeee9;
+  --surface-container-high: #e8e8e3;
+  --surface-container-highest: #e3e3de;
+  --on-surface: #1a1c19;
+  --on-surface-variant: #4d4635;
+  --inverse-surface: #2f312e;
+  --inverse-on-surface: #f1f1ec;
+
+  --primary: #d4af37;
+  --on-primary: #1a1c19;
+  --secondary: #366574;
+  --on-secondary: #ffffff;
+
+  --background-light: #fafaf5;
+  --background-dark: #1b4d5c;
+  --background-charcoal: #2c2c2c;
+
+  --text-primary-light: #1a1c19;
+  --text-secondary-light: #4d4635;
+  --text-primary-dark: #fafaf5;
+  --text-secondary-dark: #dadad5;
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --spacing-section: 160px;
+  --spacing-section-mobile: 80px;
+}
+
+/* ───────────────────────── RESET ───────────────────────── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--background-light);
+  color: var(--text-primary-light);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ───────────────────────── CONTAINER ───────────────────────── */
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (min-width: 768px) {
+  .container { padding: 0 80px; }
+}
+
+section {
+  padding: var(--spacing-section-mobile) 0;
+}
+@media (min-width: 768px) {
+  section { padding: var(--spacing-section) 0; }
+}
+
+/* ───────────────────────── NAVBAR ───────────────────────── */
+
+/* Default: transparent navbar over hero (white text via inline) */
+#top-nav {
+  transition: background-color 0.5s ease, backdrop-filter 0.5s ease, box-shadow 0.4s ease;
+}
+
+/* When scrolled → glassmorphism */
+#top-nav.nav-scrolled {
+  background: rgba(250, 250, 245, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+}
+
+/* When over dark section hero → force light text */
+#top-nav.nav-dark-section .nav-brand,
+#top-nav.nav-dark-section .nav-link,
+#top-nav.nav-dark-section .hire-btn,
+#top-nav.nav-dark-section .nav-hamburger {
+  color: #f1f1ec !important;
+}
+#top-nav.nav-dark-section .hire-btn {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* When scrolled AND over dark section → dark glass */
+#top-nav.nav-scrolled.nav-dark-section {
+  background: rgba(47, 49, 46, 0.85);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ───────────────────────── REVEAL ANIMATIONS ───────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger image scale-in */
+.stagger-img {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.7s ease;
+}
+.stagger-img.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Hover parallax tilt for work images */
+.stagger-img-container {
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+.stagger-img-container:hover .stagger-img {
+  transform: scale(1.03);
+}
+
+/* ───────────────────────── HERO SCROLL LINE ───────────────────────── */
+
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.15);
+}
+.scroll-line::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: var(--primary);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+
+@keyframes scroll-pulse {
+  0%   { top: -40px; }
+  50%  { top: 60px; }
+  100% { top: -40px; }
+}
+
+/* ───────────────────────── LOADING SCREEN ───────────────────────── */
+
+.loading-bar-track {
+  width: 200px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+.loading-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.15s ease-out;
+  border-radius: 2px;
+}
+
+/* ───────────────────────── BUTTONS ───────────────────────── */
+
+.btn-primary {
+  background-color: var(--background-charcoal);
+  color: var(--background-light);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  display: inline-block;
+}
+.btn-primary:hover {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  border: 1px solid var(--background-charcoal);
+  color: var(--background-charcoal);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+.btn-secondary:hover {
+  background-color: var(--background-charcoal);
+  color: var(--background-light);
+}
+
+/* Dark section buttons */
+.bg-dark .btn-primary, .bg-forest .btn-primary {
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+.bg-dark .btn-primary:hover, .bg-forest .btn-primary:hover {
+  background-color: var(--background-light);
+}
+
+/* ───────────────────────── UTILITY CLASSES ───────────────────────── */
+
+.text-primary { color: var(--primary); }
+.text-charcoal { color: var(--background-charcoal); }
+
+.bg-dark {
+  background-color: var(--background-charcoal);
+  color: var(--text-primary-dark);
+}
+.bg-forest {
+  background-color: var(--background-dark);
+  color: var(--text-primary-dark);
+}
+
+/* ───────────────────────── GLASSMORPHISM ───────────────────────── */
+
+.glass {
+  background: rgba(250, 250, 245, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ───────────────────────── MOBILE DRAWER ───────────────────────── */
+
+.mobile-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.mobile-drawer.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.mobile-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+}
+.mobile-drawer-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background: var(--surface);
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 80px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.mobile-drawer.open .mobile-drawer-panel {
+  transform: translateX(0);
+}
+
+/* ───────────────────────── SELECTION ───────────────────────── */
+
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* ───────────────────────── SCROLLBAR ───────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--on-surface-variant);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ───────────────────────── SEPARATOR LINE ───────────────────────── */
+
+.gold-line {
+  width: 48px;
+  height: 1px;
+  background: var(--primary);
+}
+
+/* ───────────────────────── CUSTOM CURSOR ───────────────────────── */
+
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ELARA | Full Stack Developer Portfolio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#7f7663",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#154f29",
+                    "surface": "#fafaf5",
+                    "secondary-fixed-dim": "#9fcee0",
+                    "on-primary-fixed": "#241a00",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#d4af37",
+                    "surface-container": "#eeeee9",
+                    "tertiary-container": "#86c190",
+                    "on-primary-fixed-variant": "#574500",
+                    "tertiary-fixed-dim": "#98d5a2",
+                    "surface-container-low": "#f4f4ef",
+                    "surface-variant": "#e3e3de",
+                    "surface-container-high": "#e8e8e3",
+                    "secondary": "#366574",
+                    "tertiary": "#316a40",
+                    "on-tertiary-fixed": "#00210b",
+                    "primary-fixed": "#ffe088",
+                    "on-error-container": "#93000a",
+                    "background": "#fafaf5",
+                    "on-tertiary-fixed-variant": "#17512a",
+                    "inverse-on-surface": "#f1f1ec",
+                    "on-surface-variant": "#4d4635",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#001f28",
+                    "on-surface": "#1a1c19",
+                    "on-primary-container": "#554300",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#b4f1bc",
+                    "primary": "#735c00",
+                    "surface-container-highest": "#e3e3de",
+                    "surface-dim": "#dadad5",
+                    "primary-fixed-dim": "#e9c349",
+                    "on-secondary-container": "#3c6b7a",
+                    "outline-variant": "#d0c5af",
+                    "on-background": "#1a1c19",
+                    "inverse-surface": "#2f312e",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#735c00",
+                    "secondary-fixed": "#baeafc",
+                    "on-secondary-fixed-variant": "#1a4d5c",
+                    "inverse-primary": "#e9c349",
+                    "surface-bright": "#fafaf5",
+                    "secondary-container": "#baeafc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "32px",
+                    "unit": "8px",
+                    "section-padding": "160px",
+                    "margin-mobile": "24px",
+                    "margin-desktop": "80px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.7", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        :root {
+            --reveal-duration: 1s;
+            --reveal-easing: cubic-bezier(0.25, 1, 0.5, 1);
+            --img-hover-duration: 0.6s;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity var(--reveal-duration) var(--reveal-easing), 
+                        transform var(--reveal-duration) var(--reveal-easing);
+            will-change: transform, opacity;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .cinematic-mask {
+            mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+        }
+        .nav-scrolled {
+            background-color: rgba(250, 250, 245, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        }
+        .nav-dark-section {
+            color: #fafaf5 !important;
+        }
+        .nav-dark-section div, .nav-dark-section a {
+            color: inherit !important;
+        }
+        .nav-dark-section .hire-btn {
+            border-color: #ffe088;
+            color: #ffe088 !important;
+        }
+        .nav-dark-section .hire-btn:hover {
+            background-color: #ffe088;
+            color: #1a1c19 !important;
+        }
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background-color: #d0c5af;
+            position: relative;
+            overflow: hidden;
+        }
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #735c00;
+            animation: scroll-pulse 2s infinite ease-in-out;
+        }
+        @keyframes scroll-pulse {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(150%); }
+        }
+        .stagger-img-container {
+            overflow: hidden;
+        }
+        .stagger-img {
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1.1);
+        }
+        .stagger-img.active {
+            transform: scale(1);
+        }
+        .stagger-img:hover {
+            transform: scale(1.05);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .stagger-img, .scroll-line::after {
+                transition: none !important;
+                animation: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary selection:text-white overflow-x-hidden">
+<!-- NAVIGATION SHELL -->
+<nav class="fixed top-0 w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-unit-3 z-50 transition-all duration-500 bg-transparent" id="top-nav">
+<div class="font-headline-md text-headline-md text-on-surface tracking-tighter transition-colors duration-300">ELARA</div>
+<div class="hidden md:flex gap-gutter items-center">
+<a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-300" href="#about">About</a>
+<a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-300" href="#work">Work</a>
+<a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-300" href="#skills">Skills</a>
+<a class="hire-btn font-label-md text-label-md uppercase tracking-widest text-on-surface-variant px-unit-3 py-unit-1 border border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300" href="#contact">Hire</a>
+</div>
+<div class="md:hidden">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+</div>
+</nav>
+<!-- HERO SECTION -->
+<section class="h-screen flex flex-col justify-center items-center relative px-margin-mobile text-center">
+<div class="max-w-[1280px] w-full flex flex-col items-center">
+<p class="font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-unit-4 reveal">Portfolio MMXXIV</p>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg reveal" style="transition-delay: 100ms;">Full Stack Developer</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-unit-4 max-w-lg reveal" style="transition-delay: 200ms;">Crafting digital experiences through the lens of performance and aesthetic precision.</p>
+</div>
+<div class="absolute bottom-margin-desktop flex flex-col items-center gap-unit-2 reveal" style="transition-delay: 400ms;">
+<span class="font-label-md text-label-md uppercase tracking-widest opacity-50">Scroll</span>
+<div class="scroll-line"></div>
+</div>
+</section>
+<!-- ABOUT SECTION -->
+<section class="py-section-padding px-margin-mobile bg-surface" id="about">
+<div class="max-w-[800px] mx-auto text-center">
+<div class="w-12 h-[1px] bg-primary mx-auto mb-unit-8 reveal"></div>
+<h2 class="font-headline-lg text-headline-lg mb-unit-6 reveal">The Philosophy</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed reveal">
+                I approach software development as a form of digital architecture. Every line of code serves a structural purpose, and every interface element is a deliberate choice. With a background rooted in both design and engineering, I bridge the gap between complex backend logic and seamless, cinematic user experiences. My work is defined by a quiet sophistication and a relentless focus on quality.
+            </p>
+</div>
+</section>
+<!-- WORK SECTION (DARK) -->
+<section class="py-section-padding bg-inverse-surface text-inverse-on-surface overflow-hidden" data-nav-theme="dark" id="work">
+<div class="max-w-[1280px] mx-auto px-margin-mobile">
+<header class="mb-section-padding flex flex-col md:flex-row md:items-end justify-between gap-unit-4 reveal">
+<div>
+<span class="font-label-md text-label-md uppercase tracking-widest text-primary-fixed mb-unit-2 block">Selected Works</span>
+<h2 class="font-headline-lg text-headline-lg">Curated Projects</h2>
+</div>
+<p class="font-body-md text-body-md text-outline-variant max-w-xs">An exploration of full-stack capabilities through distinct visual and technical lenses.</p>
+</header>
+<!-- Project 1: Full Width -->
+<article class="mb-section-padding grid grid-cols-1 md:grid-cols-12 gap-gutter items-center reveal">
+<div class="md:col-span-8 stagger-img-container">
+<img alt="The Arboretum Collective Dashboard" class="w-full h-auto stagger-img grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPytlxDkKewg4_OrlgFhhqXJsPBTxmBfbv_roESODKR29JglYzdEBBiT1jM2gA7VFQI2WcnZbps69vn-iRJrVxxyKr0U1u8-QP6xtBIv2Tj6h2vfcbXabKf25ayd0Gv8QYpFYKK8uAUeceWAOsr0q6v0qoIlGUxRJCL0PUHY-fc2PPoOLHBu1BDobtaCSRY1kbOKs5MUpqbzhNE_bJc1WiTJhqMp9XtYk85pGlTjp-q3kLFjcpjWlgNOeiuUT5Ljqen0eOpC1uucGE"/>
+</div>
+<div class="md:col-span-4 flex flex-col gap-unit-4">
+<h3 class="font-headline-md text-headline-md">Arboretum Collective</h3>
+<p class="font-body-md text-body-md text-outline-variant">A sustainability-focused data visualization dashboard built for ecological researchers. Focus on real-time processing and custom SVG rendering.</p>
+<div class="flex flex-wrap gap-unit-2">
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">Next.js</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">D3.js</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">PostgreSQL</span>
+</div>
+</div>
+</article>
+<!-- Project 2: Staggered Right -->
+<article class="mb-section-padding grid grid-cols-1 md:grid-cols-12 gap-gutter items-center reveal">
+<div class="md:col-start-2 md:col-span-4 order-2 md:order-1 flex flex-col gap-unit-4 text-left md:text-right">
+<h3 class="font-headline-md text-headline-md">Velorah Analytics</h3>
+<p class="font-body-md text-body-md text-outline-variant">Enterprise-grade cloud infrastructure monitoring tool. Featuring a custom design system and heavy focus on accessibility.</p>
+<div class="flex flex-wrap gap-unit-2 justify-start md:justify-end">
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">TypeScript</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">Node.js</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">AWS</span>
+</div>
+</div>
+<div class="md:col-span-7 md:col-start-6 order-1 md:order-2 stagger-img-container">
+<img alt="Velorah Analytics Workplace" class="w-full h-auto stagger-img grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiPZCST8f1PnGfHAspl8Zkdfbmv636Gs4GvKyVYJuGeJp1eSWlESE-VOU-3rOAbgBAyJm7nNy3TGLKEdiwySIJQFUeLhzaSOiFQkqewn4eCkIpcgywvkB5VF2FgG2tD8DWq9dfS4anHKvn9RzP2zDR4uApVJR2CvtWdtQoOU5p7QI7QSCqNDs0lqwDxT3SjMTrNvO1SWAWA_wt2ecPkPDjmaf-qkkBRUK_0QDMtqGS0JdTQ_7SRnVqmXFtRzK-lrkiAPtT6z8xKsEm"/>
+</div>
+</article>
+<!-- Project 3: Staggered Left -->
+<article class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center reveal">
+<div class="md:col-span-6 stagger-img-container">
+<img alt="Crystalline API Visualization" class="w-full h-auto stagger-img grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVt2gZaowG9RCFGNRTDLJjJJmYXXYkcFPBa1lRJEXI-230hUiDIbP2JP76FOp47h4Qj4g5c607g1S_-mXRRcr8e8E5yXnUFqQSG8zP0_Kj8MZdurBjXgyxUi0_IQ6Dp-CWgUF2zrKmOgQPRqJDKnOU1IbFZKTTrjAvHbA8UKPjItAKei5w_-sXUjqUQqdPm6_12YSJNoatkLVy5wNSmP0uCSklF3dJIG3AyTZRlgNPCnD0zF9ZZRD_t5F69-WLlm4T4yplJxjlZP2l"/>
+</div>
+<div class="md:col-span-5 md:col-start-8 flex flex-col gap-unit-4">
+<h3 class="font-headline-md text-headline-md">Crystalline API</h3>
+<p class="font-body-md text-body-md text-outline-variant">High-frequency trading API Gateway designed for sub-millisecond latency. Developed with a rigorous focus on security and scalability.</p>
+<div class="flex flex-wrap gap-unit-2">
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">Go</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">Redis</span>
+<span class="px-unit-2 py-1 border border-outline-variant font-label-md text-[10px] uppercase">Docker</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- SKILLS SECTION -->
+<section class="py-section-padding px-margin-mobile bg-surface" id="skills">
+<div class="max-w-[1280px] mx-auto">
+<h2 class="font-headline-lg text-headline-lg mb-section-padding text-center reveal">Technical Proficiencies</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="flex flex-col gap-unit-6 reveal">
+<div class="flex items-center gap-unit-2">
+<span class="material-symbols-outlined text-primary">layers</span>
+<h4 class="font-headline-md text-[24px]">Frontend</h4>
+</div>
+<ul class="space-y-unit-2 font-body-md text-body-md text-on-surface-variant">
+<li class="flex justify-between border-b border-surface-variant pb-2">React / Next.js <span class="opacity-30">01</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">TypeScript <span class="opacity-30">02</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">Tailwind CSS <span class="opacity-30">03</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">Three.js / WebGL <span class="opacity-30">04</span></li>
+</ul>
+</div>
+<div class="flex flex-col gap-unit-6 reveal" style="transition-delay: 100ms;">
+<div class="flex items-center gap-unit-2">
+<span class="material-symbols-outlined text-primary">database</span>
+<h4 class="font-headline-md text-[24px]">Backend</h4>
+</div>
+<ul class="space-y-unit-2 font-body-md text-body-md text-on-surface-variant">
+<li class="flex justify-between border-b border-surface-variant pb-2">Node / Express <span class="opacity-30">05</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">Go / Rust <span class="opacity-30">06</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">PostgreSQL <span class="opacity-30">07</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">GraphQL <span class="opacity-30">08</span></li>
+</ul>
+</div>
+<div class="flex flex-col gap-unit-6 reveal" style="transition-delay: 200ms;">
+<div class="flex items-center gap-unit-2">
+<span class="material-symbols-outlined text-primary">terminal</span>
+<h4 class="font-headline-md text-[24px]">Tools</h4>
+</div>
+<ul class="space-y-unit-2 font-body-md text-body-md text-on-surface-variant">
+<li class="flex justify-between border-b border-surface-variant pb-2">Docker / Kubernetes <span class="opacity-30">09</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">AWS / GCP <span class="opacity-30">10</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">CI/CD Pipelines <span class="opacity-30">11</span></li>
+<li class="flex justify-between border-b border-surface-variant pb-2">System Design <span class="opacity-30">12</span></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- CONTACT SECTION -->
+<section class="py-section-padding px-margin-mobile bg-white" id="contact">
+<div class="max-w-[1280px] mx-auto text-center">
+<span class="font-label-md text-label-md uppercase tracking-widest text-primary mb-unit-4 block reveal">Open for collaboration</span>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-unit-8 reveal">Let's Work Together</h2>
+<div class="flex flex-col md:flex-row justify-center gap-gutter reveal" style="transition-delay: 200ms;">
+<a class="font-body-lg text-body-lg text-on-surface hover:text-primary transition-colors underline decoration-primary/30 underline-offset-8" href="mailto:hello@elara.com">hello@elara.com</a>
+<a class="font-body-lg text-body-lg text-on-surface hover:text-primary transition-colors underline decoration-primary/30 underline-offset-8" href="#">LinkedIn</a>
+<a class="font-body-lg text-body-lg text-on-surface hover:text-primary transition-colors underline decoration-primary/30 underline-offset-8" href="#">GitHub</a>
+<a class="font-body-lg text-body-lg text-on-surface hover:text-primary transition-colors underline decoration-primary/30 underline-offset-8" href="#">Read.cv</a>
+</div>
+</div>
+</section>
+<!-- FOOTER -->
+<footer class="bg-inverse-surface py-gutter px-margin-mobile">
+<div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-unit-4">
+<div class="font-headline-md text-[20px] text-inverse-on-surface tracking-tighter">ELARA</div>
+<p class="font-body-md text-[12px] text-outline-variant uppercase tracking-widest text-center">© 2024 ELARA STRATEGIES. CRAFTED FOR THE CINEMATIC WEB.</p>
+<div class="flex gap-unit-4">
+<span class="material-symbols-outlined text-outline-variant text-[20px]">eco</span>
+<span class="material-symbols-outlined text-outline-variant text-[20px]">code</span>
+</div>
+</div>
+</footer>
+<script>
+    // IntersectionObserver for reveal animations and image scaling
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { 
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    document.querySelectorAll('.stagger-img').forEach(el => revealObserver.observe(el));
+
+    // Smooth scroll for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Navigation and section theme tracking
+    const nav = document.getElementById('top-nav');
+    const sections = document.querySelectorAll('section');
+
+    const updateNav = () => {
+        const scrollY = window.scrollY;
+
+        // Scrolled background state
+        if (scrollY > 50) {
+            nav.classList.add('nav-scrolled');
+        } else {
+            nav.classList.remove('nav-scrolled');
+        }
+
+        // Section theme tracking for nav text color
+        let currentTheme = 'light';
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            // Check if section occupies the top of the viewport (near nav)
+            if (rect.top <= 80 && rect.bottom >= 80) {
+                if (section.getAttribute('data-nav-theme') === 'dark') {
+                    currentTheme = 'dark';
+                }
+            }
+        });
+
+        if (currentTheme === 'dark') {
+            nav.classList.add('nav-dark-section');
+        } else {
+            nav.classList.remove('nav-dark-section');
+        }
+    };
+
+    window.addEventListener('scroll', updateNav, { passive: true });
+    window.addEventListener('resize', updateNav, { passive: true });
+    // Initial check
+    updateNav();
+
+    // Subtle atmospheric mouse follow (optional enhancement)
+    // Removed to stay minimal as per conventions, keeping script logic purely to requirements.
+</script>
+</body></html>
