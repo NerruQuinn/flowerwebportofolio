@@ -174,6 +174,40 @@ section {
   transform: scale(1.03);
 }
 
+.card-shadow {
+  width: 80%;
+  height: 20px;
+  margin: 0 auto;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(8px);
+  transform: translateY(-8px);
+  opacity: 0.7;
+}
+
+/* Parallax performance hints */
+#about .gold-line,
+#about h2,
+#about h3,
+#work header h2,
+#work article,
+#work article img,
+#skills .gold-line,
+#skills h2,
+#skills .material-symbols-outlined,
+#contact h2,
+#contact .max-w-\[1280px\] {
+  will-change: transform;
+}
+
+#work article {
+  transition: box-shadow 0.3s ease;
+}
+
+#work article:hover {
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.08);
+}
+
 /* ───────────────────────── HERO SCROLL LINE ───────────────────────── */
 
 .scroll-line {

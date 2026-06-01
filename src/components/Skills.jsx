@@ -24,7 +24,7 @@ const Skills = () => {
       <div className="max-w-[1280px] mx-auto">
         <div className="text-center mb-section-padding">
           <div className="gold-line mx-auto mb-8 reveal" />
-          <h2 className="font-headline-lg text-headline-lg reveal">Technical Proficiencies</h2>
+          <h2 className="section-heading font-headline-lg text-headline-lg reveal">Technical Proficiencies</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
@@ -40,7 +40,7 @@ const Skills = () => {
               </div>
               <ul className="space-y-3 font-body-md text-body-md text-on-surface-variant">
                 {items.map((item, i) => (
-                  <li key={item} className="flex justify-between items-center border-b border-surface-variant pb-3 group">
+                  <li key={item} className="skill-list-item flex justify-between items-center border-b border-surface-variant pb-3 group">
                     <span className="group-hover:text-primary transition-colors duration-300">{item}</span>
                     <span className="font-label-md text-[10px] text-on-surface-variant opacity-20 tabular-nums">
                       {String(colIdx * 4 + i + 1).padStart(2, '0')}

@@ -6,8 +6,11 @@ import Work from './components/Work';
 import Skills from './components/Skills';
 import Contact from './components/Contact';
 import CustomCursor from './components/CustomCursor';
+import useScrollAnimations from './hooks/useScrollAnimations';
 
 function App() {
+  useScrollAnimations();
+
   useEffect(() => {
     // ─── Reveal Observer ───
     const revealObserver = new IntersectionObserver(

@@ -11,7 +11,7 @@ const Work = () => {
         <header className="mb-section-padding flex flex-col md:flex-row md:items-end justify-between gap-unit-4 reveal">
           <div>
             <span className="font-label-md text-label-md uppercase tracking-widest text-primary-fixed mb-unit-2 block">Selected Works</span>
-            <h2 className="font-headline-lg text-headline-lg">Curated Projects</h2>
+            <h2 className="section-heading font-headline-lg text-headline-lg">Curated Projects</h2>
           </div>
           <p className="font-body-md text-body-md text-outline-variant max-w-xs">An exploration of full-stack capabilities through distinct visual and technical lenses.</p>
         </header>
@@ -20,6 +20,7 @@ const Work = () => {
         <article className="mb-section-padding grid grid-cols-1 md:grid-cols-12 gap-gutter items-center reveal">
           <div className="md:col-span-8 stagger-img-container">
             <img alt="The Arboretum Collective Dashboard" width="1200" height="675" className="w-full aspect-video object-cover stagger-img grayscale hover:grayscale-0 transition-all duration-700" src={Gambar1}/>
+            <div className="card-shadow" />
           </div>
           <div className="md:col-span-4 flex flex-col gap-unit-4">
             <h3 className="font-headline-md text-headline-md">TeacherCrack</h3>
@@ -63,6 +64,7 @@ const Work = () => {
           </div>
           <div className="md:col-span-7 md:col-start-6 order-1 md:order-2 stagger-img-container">
             <img alt="Velorah Analytics Workplace" width="1200" height="675" className="w-full aspect-video object-cover stagger-img grayscale hover:grayscale-0 transition-all duration-700" src={Gambar2}/>
+            <div className="card-shadow" />
           </div>
         </article>
 
@@ -70,6 +72,7 @@ const Work = () => {
         <article className="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center reveal">
           <div className="md:col-span-6 stagger-img-container">
             <img alt="Crystalline API Visualization" width="1200" height="675" className="w-full aspect-video object-cover stagger-img grayscale hover:grayscale-0 transition-all duration-700" src={Gambar3}/>
+            <div className="card-shadow" />
           </div>
           <div className="md:col-span-5 md:col-start-8 flex flex-col gap-unit-4">
             <h3 className="font-headline-md text-headline-md">Above The Clouds</h3>

@@ -17,7 +17,7 @@ const Contact = () => {
             Open for collaboration
           </span>
           <h2
-            className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-8 reveal"
+            className="section-heading font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-8 reveal"
             style={{ transitionDelay: '100ms' }}
           >
             Let's Work Together

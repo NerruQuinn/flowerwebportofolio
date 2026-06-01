@@ -16,6 +16,7 @@ const Hero = () => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const canvasWrapperRef = useRef(null);
+  const gradientOverlayRef = useRef(null);
   const imagesRef = useRef(new Array(frameCount));
   const currentFrameRef = useRef(0);
   const rafRef = useRef(null);
@@ -94,6 +95,7 @@ const Hero = () => {
     const onScroll = () => {
       const container = containerRef.current;
       const wrapper = canvasWrapperRef.current;
+      const overlay = gradientOverlayRef.current;
       if (!container || !wrapper) return;
 
       const containerBottom = container.offsetTop + container.offsetHeight;
@@ -111,8 +113,13 @@ const Hero = () => {
       // Calculate frame index based on scroll within the container
       const maxScroll = container.scrollHeight - window.innerHeight;
       const fraction = Math.max(0, Math.min(1, scrollY / maxScroll));
-      const idx = Math.min(frameCount - 1, Math.floor(fraction * frameCount));
+      const fadeStart = 0.7;
+      const fadeOpacity = fraction > fadeStart ? (fraction - fadeStart) / (1 - fadeStart) : 0;
+      if (overlay) {
+        overlay.style.opacity = String(fadeOpacity);
+      }
 
+      const idx = Math.min(frameCount - 1, Math.floor(fraction * frameCount));
       if (idx !== currentFrameRef.current) {
         currentFrameRef.current = idx;
         cancelAnimationFrame(rafRef.current);
@@ -202,6 +209,20 @@ const Hero = () => {
           className="absolute inset-0 pointer-events-none"
           style={{
             background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)',
+          }}
+        />
+        <div
+          ref={gradientOverlayRef}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '500px',
+            background: 'linear-gradient(to bottom, transparent 0%, #fafaf5 100%)',
+            pointerEvents: 'none',
+            zIndex: 2,
+            opacity: 0,
           }}
         />
       </div>
