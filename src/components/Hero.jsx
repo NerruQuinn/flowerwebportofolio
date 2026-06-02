@@ -41,24 +41,41 @@ const Hero = () => {
     if (!isLoaded || !containerRef.current || !wrapperRef.current) return;
 
     let lastScrollTime = 0;
-    const THROTTLE_MS = window.innerWidth < 768 ? 32 : 16;
+    const isMobile = window.innerWidth < 768;
+    const THROTTLE_MS = isMobile ? 80 : 16;
+
+    // Track hero zone state to avoid unnecessary processing
+    let wasPastHero = false;
 
     const updateWrapperVisibility = () => {
       const container = containerRef.current;
       const wrapper = wrapperRef.current;
       const overlay = gradientOverlayRef.current;
+      const video = videoRef.current;
       if (!container || !wrapper) return;
 
       const containerBottom = container.offsetTop + container.offsetHeight;
       const scrollY = window.scrollY;
+      const nowPastHero = scrollY >= containerBottom - window.innerHeight * 0.1;
 
-      if (scrollY >= containerBottom - window.innerHeight * 0.1) {
-        wrapper.style.opacity = '0';
-        wrapper.style.pointerEvents = 'none';
-      } else {
-        wrapper.style.opacity = '1';
-        wrapper.style.pointerEvents = 'auto';
+      // ── PAST HERO ZONE: hide wrapper, stop seeking, pause video ──
+      if (nowPastHero) {
+        if (!wasPastHero) {
+          wrapper.style.opacity = '0';
+          wrapper.style.pointerEvents = 'none';
+          if (video) { video.pause(); }
+          wasPastHero = true;
+        }
+        return; // <── critical: skip ALL video/overlay work
       }
+
+      // ── INSIDE HERO ZONE ──
+      if (wasPastHero) {
+        wasPastHero = false;
+      }
+
+      wrapper.style.opacity = '1';
+      wrapper.style.pointerEvents = 'auto';
 
       const maxScroll = container.scrollHeight - window.innerHeight;
       const fraction = Math.max(0, Math.min(1, scrollY / maxScroll));
@@ -68,7 +85,6 @@ const Hero = () => {
         overlay.style.opacity = String(fadeOpacity);
       }
 
-      const video = videoRef.current;
       if (video && video.duration) {
         const targetTime = fraction * video.duration;
         try {
