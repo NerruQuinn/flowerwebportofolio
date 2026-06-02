@@ -1,0 +1,9 @@
+[33mcc1d764[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m add preloader with video buffering
+[33m1354239[m optimize hero scroll-driven video playback
+[33m3fe0004[m feat: instant load with poster image, remove loading screen
+[33m332e72c[m feat: replace canvas with native video element for GPU rendering
+[33mbfc296e[m fix: remove CV button, fix mobile text overflow
+[33mce92f3f[m feat: mobile responsive Why Choose Me section, video seek optimization
+[33m06e4d62[m fix: update title to Nerru
+[33mf2e914b[m feat: scroll animations, magnetic effect, parallax, project updates
+[33mab77302[m first commit
