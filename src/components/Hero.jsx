@@ -19,6 +19,8 @@ const Hero = () => {
   const gradientOverlayRef = useRef(null);
   const mobileOverlayRef = useRef(null);
   const canvasRef = useRef(null);
+  const framesRef = useRef([]);
+  const objRef = useRef({ frame: 0 });
   const [loadedCount, setLoadedCount] = useState(0);
   const [mobileFramesLoaded, setMobileFramesLoaded] = useState(false);
   const isLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
@@ -123,7 +125,33 @@ const Hero = () => {
           }
         }
       });
+
+      // Store in refs for resize handler access
+      framesRef.current = frames;
+      objRef.current = obj;
     };
+
+    // Resize + orientation change handler — recalculates cover-fit
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      // Redraw current frame after resize
+      const currentFrame = framesRef.current[Math.round(objRef.current.frame)];
+      if (currentFrame) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const scale = Math.max(canvas.width / currentFrame.width, canvas.height / currentFrame.height);
+        const x = (canvas.width - currentFrame.width * scale) / 2;
+        const y = (canvas.height - currentFrame.height * scale) / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(currentFrame, x, y, currentFrame.width * scale, currentFrame.height * scale);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    screen.orientation?.addEventListener('change', handleResize);
 
     return () => {
       // Cleanup ScrollTrigger on unmount
@@ -132,6 +160,9 @@ const Hero = () => {
           trigger.kill();
         }
       });
+      // Cleanup resize / orientation listeners
+      window.removeEventListener('resize', handleResize);
+      screen.orientation?.removeEventListener('change', handleResize);
     };
   }, [isMobile]);
 
