@@ -90,10 +90,18 @@ const Hero = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
+      // Cover-fit draw helper (crop, don't stretch)
+      const drawFrame = (frame) => {
+        const scale = Math.max(canvas.width / frame.width, canvas.height / frame.height);
+        const x = (canvas.width - frame.width * scale) / 2;
+        const y = (canvas.height - frame.height * scale) / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(frame, x, y, frame.width * scale, frame.height * scale);
+      };
+
       // Initialize with first frame
       if (frames[0]) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(frames[0], 0, 0, canvas.width, canvas.height);
+        drawFrame(frames[0]);
       }
 
       // Create GSAP animation with ScrollTrigger
@@ -111,8 +119,7 @@ const Hero = () => {
         onUpdate: () => {
           const currentFrame = frames[Math.round(obj.frame)];
           if (currentFrame) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
+            drawFrame(currentFrame);
           }
         }
       });
