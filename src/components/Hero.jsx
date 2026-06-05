@@ -166,85 +166,55 @@ const Hero = () => {
     };
   }, [isMobile]);
 
-  // Scroll-driven video seeking and wrapper visibility (desktop only)
+  // Scroll-driven video seeking and wrapper visibility (desktop only) — GSAP ScrollTrigger
   useEffect(() => {
     if (isMobile || !isLoaded || !containerRef.current || !wrapperRef.current) return;
 
-    let lastScrollTime = 0;
-    const THROTTLE_MS = 16;
+    // 1. Video seeking based on scroll progress
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.3,
+      onUpdate: (self) => {
+        const video = videoRef.current;
+        if (!video || !video.duration) return;
+        const targetTime = self.progress * video.duration;
+        video.currentTime = targetTime;
+      }
+    });
 
-    // Track hero zone state to avoid unnecessary processing
-    let wasPastHero = false;
-
-    const updateWrapperVisibility = () => {
-      const container = containerRef.current;
-      const wrapper = wrapperRef.current;
-      const overlay = gradientOverlayRef.current;
-      const video = videoRef.current;
-      if (!container || !wrapper) return;
-
-      const containerBottom = container.offsetTop + container.offsetHeight;
-      const scrollY = window.scrollY;
-      const nowPastHero = scrollY >= containerBottom - window.innerHeight * 0.1;
-
-      // ── PAST HERO ZONE: hide wrapper, stop seeking, pause video ──
-      if (nowPastHero) {
-        if (!wasPastHero) {
-          wrapper.style.opacity = '0';
-          wrapper.style.pointerEvents = 'none';
-          if (video) { video.pause(); }
-          wasPastHero = true;
+    // 2. Wrapper visibility — hide when scrolled past hero zone
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: 'bottom 10%',
+      end: 'bottom top',
+      onEnter: () => {
+        if (wrapperRef.current) {
+          wrapperRef.current.style.opacity = '0';
+          wrapperRef.current.style.pointerEvents = 'none';
         }
-        return; // <── critical: skip ALL video/overlay work
-      }
-
-      // ── INSIDE HERO ZONE ──
-      if (wasPastHero) {
-        wasPastHero = false;
-      }
-
-      wrapper.style.opacity = '1';
-      wrapper.style.pointerEvents = 'auto';
-
-      const maxScroll = container.scrollHeight - window.innerHeight;
-      const fraction = Math.max(0, Math.min(1, scrollY / maxScroll));
-      const fadeStart = 0.7;
-      const fadeOpacity = fraction > fadeStart ? (fraction - fadeStart) / (1 - fadeStart) : 0;
-      if (overlay) {
-        overlay.style.opacity = String(fadeOpacity);
-      }
-
-      if (video && video.duration) {
-        const targetTime = fraction * video.duration;
-        try {
-          if (typeof video.fastSeek === 'function') {
-            video.fastSeek(targetTime);
-          } else {
-            video.currentTime = targetTime;
-          }
-        } catch (e) {
-          // setting currentTime can throw on some browsers if not ready
+      },
+      onLeaveBack: () => {
+        if (wrapperRef.current) {
+          wrapperRef.current.style.opacity = '1';
+          wrapperRef.current.style.pointerEvents = 'auto';
         }
       }
-    };
+    });
 
-    const onScroll = () => {
-      if (Date.now() - lastScrollTime < THROTTLE_MS) return;
-      lastScrollTime = Date.now();
-      updateWrapperVisibility();
-    };
+    // 3. Gradient overlay fades in after 70% scroll
+    gsap.to(gradientOverlayRef.current, {
+      opacity: 1,
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: '70% top',
+        end: 'bottom bottom',
+        scrub: true,
+      }
+    });
 
-    const onResize = () => updateWrapperVisibility();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-
-    onScroll();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-    };
+    return () => ScrollTrigger.getAll().forEach(t => t.kill());
   }, [isMobile, isLoaded]);
 
   // Hero text entrance animation
