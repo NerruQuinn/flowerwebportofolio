@@ -46,23 +46,23 @@ const Hero = () => {
   useEffect(() => {
     if (!isMobile || !frameRef.current) return;
 
-    // Preload all 80 frames into Image objects on mount
+    // Preload all 40 frames into Image objects on mount
     const frames = [];
     let loadedFrames = 0;
 
-    for (let i = 1; i <= 80; i++) {
+    for (let i = 1; i <= 40; i++) {
       const img = new Image();
       const frameNum = String(i).padStart(3, '0');
       img.src = `/frames/frame_${frameNum}.jpg`;
       img.onload = () => {
         loadedFrames++;
-        if (loadedFrames === 80) {
+        if (loadedFrames === 40) {
           setLoadedCount(frameCount);
         }
       };
       img.onerror = () => {
         loadedFrames++;
-        if (loadedFrames === 80) {
+        if (loadedFrames === 40) {
           setLoadedCount(frameCount);
         }
       };
@@ -80,8 +80,8 @@ const Hero = () => {
       const scrollZone = window.innerHeight * 5; // 0 to 500vh
       const fraction = Math.max(0, Math.min(1, scrollY / scrollZone));
 
-      // Map scrollY to frame index: Math.floor(fraction * 79), clamped 0-79
-      const frameIndex = Math.floor(fraction * 79);
+      // Map scrollY to frame index: Math.floor(fraction * 39), clamped 0-39
+      const frameIndex = Math.floor(fraction * 39);
 
       // Only update src if frame index changed
       if (frameIndex !== prevFrameIndexRef.current) {
