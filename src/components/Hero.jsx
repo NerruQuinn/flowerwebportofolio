@@ -21,6 +21,7 @@ const Hero = () => {
   const canvasRef = useRef(null);
   const framesRef = useRef([]);
   const objRef = useRef({ frame: 0 });
+  const scaleRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
   const [loadedCount, setLoadedCount] = useState(0);
   const [mobileFramesLoaded, setMobileFramesLoaded] = useState(false);
   const isLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
@@ -92,13 +93,19 @@ const Hero = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      // Cover-fit draw helper (crop, don't stretch)
+      // Calculate cover-fit scale/position ONCE from first frame
+      const baseWidth = frames[0].width;
+      const baseHeight = frames[0].height;
+      const baseScale = Math.max(canvas.width / baseWidth, canvas.height / baseHeight);
+      const offsetX = (canvas.width - baseWidth * baseScale) / 2;
+      const offsetY = (canvas.height - baseHeight * baseScale) / 2;
+      scaleRef.current = { scale: baseScale, offsetX, offsetY };
+
+      // Cover-fit draw helper using cached scale/position
       const drawFrame = (frame) => {
-        const scale = Math.max(canvas.width / frame.width, canvas.height / frame.height);
-        const x = (canvas.width - frame.width * scale) / 2;
-        const y = (canvas.height - frame.height * scale) / 2;
+        const { scale, offsetX, offsetY } = scaleRef.current;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(frame, x, y, frame.width * scale, frame.height * scale);
+        ctx.drawImage(frame, offsetX, offsetY, frame.width * scale, frame.height * scale);
       };
 
       // Initialize with first frame
@@ -131,22 +138,29 @@ const Hero = () => {
       objRef.current = obj;
     };
 
-    // Resize + orientation change handler — recalculates cover-fit
+    // Resize + orientation change handler — recalculates cached cover-fit from frames[0]
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      // Redraw current frame after resize
-      const currentFrame = framesRef.current[Math.round(objRef.current.frame)];
-      if (currentFrame) {
+
+      // Recalculate scale/position from frames[0] dimensions
+      const frames = framesRef.current;
+      const currentFrame = frames[Math.round(objRef.current.frame)];
+      if (frames[0] && currentFrame) {
+        const baseWidth = frames[0].width;
+        const baseHeight = frames[0].height;
+        const baseScale = Math.max(canvas.width / baseWidth, canvas.height / baseHeight);
+        scaleRef.current = {
+          scale: baseScale,
+          offsetX: (canvas.width - baseWidth * baseScale) / 2,
+          offsetY: (canvas.height - baseHeight * baseScale) / 2,
+        };
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-        const scale = Math.max(canvas.width / currentFrame.width, canvas.height / currentFrame.height);
-        const x = (canvas.width - currentFrame.width * scale) / 2;
-        const y = (canvas.height - currentFrame.height * scale) / 2;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(currentFrame, x, y, currentFrame.width * scale, currentFrame.height * scale);
+        ctx.drawImage(currentFrame, scaleRef.current.offsetX, scaleRef.current.offsetY, currentFrame.width * baseScale, currentFrame.height * baseScale);
       }
     };
 
