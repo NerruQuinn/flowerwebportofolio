@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import MagneticElement from './MagneticElement';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
-gsap.registerPlugin(ScrollToPlugin);
+gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 const frameCount = 240;
 
@@ -13,11 +14,10 @@ const Hero = () => {
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const mobileSpacerRef = useRef(null);
   const wrapperRef = useRef(null);
   const gradientOverlayRef = useRef(null);
-  const frameRef = useRef(null);
-  const framesRef = useRef([]);
-  const prevFrameIndexRef = useRef(-1);
+  const canvasRef = useRef(null);
   const [loadedCount, setLoadedCount] = useState(0);
   const isLoaded = loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
@@ -42,61 +42,82 @@ const Hero = () => {
     };
   }, []);
 
-  // Mobile frame preloading and sequencing
+  // Mobile Canvas + ScrollTrigger frame animation
   useEffect(() => {
-    if (!isMobile || !frameRef.current) return;
+    if (!isMobile || !canvasRef.current || !mobileSpacerRef.current) return;
 
-    // Preload all 40 frames into Image objects on mount
+    // Preload all 40 frames as ImageBitmap
     const frames = [];
     let loadedFrames = 0;
 
-    for (let i = 1; i <= 40; i++) {
-      const img = new Image();
-      const frameNum = String(i).padStart(3, '0');
-      img.src = `/frames/frame_${frameNum}.jpg`;
-      img.onload = () => {
+    const loadFrame = async (frameNum) => {
+      try {
+        const response = await fetch(`/frames/frame_${String(frameNum).padStart(3, '0')}.webp`);
+        const blob = await response.blob();
+        const bitmap = await createImageBitmap(blob);
+        frames[frameNum - 1] = bitmap;
         loadedFrames++;
         if (loadedFrames === 40) {
-          setLoadedCount(frameCount);
+          initScrollTrigger();
         }
-      };
-      img.onerror = () => {
+      } catch (e) {
+        console.error(`Failed to load frame ${frameNum}:`, e);
         loadedFrames++;
         if (loadedFrames === 40) {
-          setLoadedCount(frameCount);
+          initScrollTrigger();
         }
-      };
-      frames.push(img);
-    }
-
-    framesRef.current = frames;
-
-    // Use rAF loop reading window.scrollY
-    let rafId;
-    const updateFrame = () => {
-      if (!frameRef.current) return;
-
-      const scrollY = window.scrollY;
-      const scrollZone = window.innerHeight * 5; // 0 to 500vh
-      const fraction = Math.max(0, Math.min(1, scrollY / scrollZone));
-
-      // Map scrollY to frame index: Math.floor(fraction * 39), clamped 0-39
-      const frameIndex = Math.floor(fraction * 39);
-
-      // Only update src if frame index changed
-      if (frameIndex !== prevFrameIndexRef.current) {
-        prevFrameIndexRef.current = frameIndex;
-        const frameNum = String(frameIndex + 1).padStart(3, '0');
-        frameRef.current.src = `/frames/frame_${frameNum}.webp`;
       }
-
-      rafId = requestAnimationFrame(updateFrame);
     };
 
-    rafId = requestAnimationFrame(updateFrame);
+    // Load all frames
+    for (let i = 1; i <= 40; i++) {
+      loadFrame(i);
+    }
+
+    const initScrollTrigger = () => {
+      setLoadedCount(frameCount);
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Initialize with first frame
+      if (frames[0]) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(frames[0], 0, 0);
+      }
+
+      // Create GSAP animation with ScrollTrigger
+      const obj = { frame: 0 };
+      gsap.to(obj, {
+        frame: 39,
+        snap: 'frame',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: mobileSpacerRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.5,
+        },
+        onUpdate: () => {
+          const currentFrame = frames[Math.round(obj.frame)];
+          if (currentFrame) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(currentFrame, 0, 0);
+          }
+        }
+      });
+    };
 
     return () => {
-      cancelAnimationFrame(rafId);
+      // Cleanup ScrollTrigger on unmount
+      ScrollTrigger.getAll().forEach(trigger => {
+        if (trigger.vars.trigger === mobileSpacerRef.current) {
+          trigger.kill();
+        }
+      });
     };
   }, [isMobile]);
 
@@ -235,16 +256,14 @@ const Hero = () => {
       {/* ─── MOBILE: Frame Sequence Hero ─── */}
       {isMobile ? (
         <>
-          {/* Fixed fullscreen frame image as background */}
-          <img
-            ref={frameRef}
-            src="/frames/frame_001.webp"
-            alt="hero"
+          {/* Fixed fullscreen canvas as background */}
+          <canvas
+            ref={canvasRef}
             style={{
               position: 'fixed',
               inset: 0,
-              width: '100%',
-              height: '100%',
+              width: '100vw',
+              height: '100vh',
               objectFit: 'cover',
               zIndex: 10,
             }}
@@ -252,7 +271,7 @@ const Hero = () => {
 
           {/* Scrollable spacer div: height 500vh */}
           <div
-            ref={containerRef}
+            ref={mobileSpacerRef}
             className="relative w-full"
             style={{ height: '500vh' }}
             data-nav-theme="dark"
