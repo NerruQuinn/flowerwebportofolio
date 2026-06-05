@@ -86,10 +86,14 @@ const Hero = () => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
+      // Set canvas dimensions to match viewport
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
       // Initialize with first frame
       if (frames[0]) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(frames[0], 0, 0);
+        ctx.drawImage(frames[0], 0, 0, canvas.width, canvas.height);
       }
 
       // Create GSAP animation with ScrollTrigger
@@ -108,7 +112,7 @@ const Hero = () => {
           const currentFrame = frames[Math.round(obj.frame)];
           if (currentFrame) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(currentFrame, 0, 0);
+            ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
           }
         }
       });
@@ -269,10 +273,11 @@ const Hero = () => {
             ref={canvasRef}
             style={{
               position: 'fixed',
-              inset: 0,
+              top: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
               width: '100vw',
               height: '100vh',
-              objectFit: 'cover',
               zIndex: 10,
             }}
           />
