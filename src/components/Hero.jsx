@@ -6,7 +6,7 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
-const frameCount = 240;
+const frameCount = 40;
 
 const Hero = () => {
   // Detect device at top of component
@@ -17,9 +17,11 @@ const Hero = () => {
   const mobileSpacerRef = useRef(null);
   const wrapperRef = useRef(null);
   const gradientOverlayRef = useRef(null);
+  const mobileOverlayRef = useRef(null);
   const canvasRef = useRef(null);
   const [loadedCount, setLoadedCount] = useState(0);
-  const isLoaded = loadedCount === frameCount;
+  const [mobileFramesLoaded, setMobileFramesLoaded] = useState(false);
+  const isLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
 
   // Video metadata loader — mark as loaded when metadata is available
@@ -76,6 +78,7 @@ const Hero = () => {
 
     const initScrollTrigger = () => {
       setLoadedCount(frameCount);
+      setMobileFramesLoaded(true);
 
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -202,16 +205,21 @@ const Hero = () => {
     };
   }, [isMobile, isLoaded]);
 
-  // Mouse-follow parallax on video
+  // Hero text entrance animation
   useEffect(() => {
-    if (!isLoaded || !videoRef.current) return;
+    const shouldAnimate = isMobile ? mobileFramesLoaded : isLoaded;
+    if (!shouldAnimate) return;
 
-    // Trigger hero text entrance animations once loading is done
     gsap.fromTo(
       '.hero-anim',
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.2 }
     );
+  }, [isMobile, mobileFramesLoaded, isLoaded]);
+
+  // Mouse-follow parallax on video
+  useEffect(() => {
+    if (!isLoaded || !videoRef.current) return;
 
     const onMouseMove = (e) => {
       const xOff = (e.clientX / window.innerWidth - 0.5) * 30;
@@ -318,7 +326,7 @@ const Hero = () => {
 
             {/* Gradient overlay fades in after 70% scroll */}
             <div
-              ref={gradientOverlayRef}
+              ref={mobileOverlayRef}
               style={{
                 position: 'fixed',
                 bottom: 0,
