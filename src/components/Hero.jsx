@@ -10,7 +10,7 @@ const frameCount = 40;
 
 const Hero = () => {
   // Detect device at top of component
-  const isMobile = window.innerWidth < 768;
+  const isMobile = window.innerWidth < 1024;
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
