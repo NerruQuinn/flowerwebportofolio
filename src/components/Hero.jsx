@@ -21,6 +21,7 @@ const Hero = () => {
   const gradientOverlayRef = useRef(null);
   const mobileOverlayRef = useRef(null);
   const canvasRef = useRef(null);
+  const tabletVideoRef = useRef(null);
   const framesRef = useRef([]);
   const objRef = useRef({ frame: 0 });
   const scaleRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
@@ -49,9 +50,61 @@ const Hero = () => {
     };
   }, []);
 
-  // Mobile Canvas + ScrollTrigger frame animation
+  // Tablet Canvas + requestVideoFrameCallback
   useEffect(() => {
-    if (!isMobile || !canvasRef.current || !mobileSpacerRef.current) return;
+    if (!isTablet || !canvasRef.current || !tabletVideoRef.current) return;
+
+    const canvas = canvasRef.current;
+    const video = tabletVideoRef.current;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const drawVideoFrame = () => {
+      const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
+      const offsetX = (canvas.width - video.videoWidth * scale) / 2;
+      const offsetY = (canvas.height - video.videoHeight * scale) / 2;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
+    };
+
+    const initTablet = () => {
+      video.pause();
+      setMobileFramesLoaded(true);
+
+      const obj = { time: 0 };
+      gsap.to(obj, {
+        time: video.duration,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: mobileSpacerRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 1,
+          onUpdate: (self) => {
+            video.currentTime = self.progress * video.duration;
+          }
+        }
+      });
+
+      const loop = () => {
+        drawVideoFrame();
+        video.requestVideoFrameCallback(loop);
+      };
+      video.requestVideoFrameCallback(loop);
+    };
+
+    video.addEventListener('canplaythrough', initTablet, { once: true });
+    if (video.readyState >= 4) initTablet();
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill());
+    };
+  }, [isTablet]);
+
+  // Mobile Canvas + ScrollTrigger frame animation (non-tablet mobile)
+  useEffect(() => {
+    if (isTablet || !isMobile || !canvasRef.current || !mobileSpacerRef.current) return;
 
     // Preload all 40 frames as ImageBitmap
     const frames = [];
@@ -118,13 +171,13 @@ const Hero = () => {
       // Create GSAP animation with ScrollTrigger
       const obj = { frame: 0 };
       gsap.to(obj, {
-        frame: isTablet ? 63 : 39,
+        frame: 39,
         ease: 'none',
         scrollTrigger: {
           trigger: mobileSpacerRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: isTablet ? 1.5 : 0.5,
+          scrub: 0.5,
           smoothChildTiming: true,
         },
         onUpdate: (self) => {
@@ -182,7 +235,7 @@ const Hero = () => {
       window.removeEventListener('resize', handleResize);
       screen.orientation?.removeEventListener('change', handleResize);
     };
-  }, [isMobile]);
+  }, [isMobile, isTablet]);
 
   // Scroll-driven video seeking and wrapper visibility (desktop only) — GSAP ScrollTrigger
   useEffect(() => {
@@ -294,6 +347,18 @@ const Hero = () => {
       {/* ─── MOBILE: Frame Sequence Hero ─── */}
       {isMobile ? (
         <>
+          {/* Hidden tablet video for requestVideoFrameCallback */}
+          {isTablet && (
+            <video
+              ref={tabletVideoRef}
+              src="/videohero-seekable.mp4"
+              preload="auto"
+              muted
+              playsInline
+              style={{ display: 'none' }}
+            />
+          )}
+
           {/* Fixed fullscreen canvas as background */}
           <canvas
             ref={canvasRef}
