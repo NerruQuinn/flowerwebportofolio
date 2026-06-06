@@ -26,9 +26,25 @@ const Hero = () => {
   const objRef = useRef({ frame: 0 });
   const scaleRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
   const [loadedCount, setLoadedCount] = useState(0);
+  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
+  const loaderRef = useRef(null);
+  const loaderContentRef = useRef(null);
+  const percentRef = useRef({ val: 0 });
+  const [displayPercent, setDisplayPercent] = useState(0);
   const [mobileFramesLoaded, setMobileFramesLoaded] = useState(false);
-  const isLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
+  const rawIsLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
+
+  useEffect(() => {
+    gsap.to(percentRef.current, { val: loadPercent, duration: 0.5, ease: "power2.out", onUpdate: () => setDisplayPercent(Math.round(percentRef.current.val)) });
+  }, [loadPercent]);
+
+  useEffect(() => {
+    if (rawIsLoaded && displayPercent >= 99) {
+      const tl = gsap.timeline({ onComplete: () => setIsFullyLoaded(true) });
+      tl.to(loaderContentRef.current, { y: -50, opacity: 0, duration: 0.6, ease: "power3.in" }).to(loaderRef.current, { yPercent: -100, duration: 0.8, ease: "power4.inOut" }, "-=0.2");
+    }
+  }, [rawIsLoaded, displayPercent]);
 
   // Video metadata loader â€” mark as loaded when metadata is available
   useEffect(() => {
@@ -187,20 +203,30 @@ const Hero = () => {
 
   // Scroll-driven video seeking and wrapper visibility (desktop only) â€” GSAP ScrollTrigger
   useEffect(() => {
-    if (isMobile || !isLoaded || !containerRef.current || !wrapperRef.current) return;
+    if (isMobile || !isFullyLoaded || !containerRef.current || !wrapperRef.current) return;
 
     // 1. Video seeking based on scroll progress
     ScrollTrigger.create({
       trigger: containerRef.current,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
       onUpdate: (self) => {
-        const video = videoRef.current;
-        if (!video || !video.duration) return;
-        const targetTime = self.progress * video.duration;
-        video.currentTime = targetTime;
-      }
+          const video = videoRef.current;
+          if (!video || !video.duration) return;
+          
+          const targetTime = self.progress * video.duration;
+          
+          if (!video.isUpdating) {
+            video.isUpdating = true;
+            requestAnimationFrame(() => {
+              if (Math.abs(video.currentTime - targetTime) > 0.05) {
+                video.currentTime = targetTime;
+              }
+              video.isUpdating = false;
+            });
+          }
+        }
     });
 
     // 2. Wrapper visibility â€” hide when scrolled past hero zone
@@ -234,11 +260,11 @@ const Hero = () => {
     });
 
     return () => ScrollTrigger.getAll().forEach(t => t.kill());
-  }, [isMobile, isLoaded]);
+  }, [isMobile, isFullyLoaded]);
 
   // Hero text entrance animation
   useEffect(() => {
-    const shouldAnimate = isMobile ? mobileFramesLoaded : isLoaded;
+    const shouldAnimate = isMobile ? mobileFramesLoaded : isFullyLoaded;
     if (!shouldAnimate) return;
 
     gsap.fromTo(
@@ -246,11 +272,11 @@ const Hero = () => {
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.2 }
     );
-  }, [isMobile, mobileFramesLoaded, isLoaded]);
+  }, [isMobile, mobileFramesLoaded, isFullyLoaded]);
 
   // Mouse-follow parallax on video
   useEffect(() => {
-    if (!isLoaded || !videoRef.current) return;
+    if (!isFullyLoaded || !videoRef.current) return;
 
     const onMouseMove = (e) => {
       const xOff = (e.clientX / window.innerWidth - 0.5) * 30;
@@ -265,7 +291,7 @@ const Hero = () => {
 
     window.addEventListener('mousemove', onMouseMove);
     return () => window.removeEventListener('mousemove', onMouseMove);
-  }, [isLoaded]);
+  }, [isFullyLoaded]);
 
   const scrollToContent = () => {
     gsap.to(window, {
@@ -278,19 +304,21 @@ const Hero = () => {
   return (
     <>
       {/* â”€â”€â”€ Loading Screen â”€â”€â”€ */}
-      {!isLoaded && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
-          <p className="font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-6 animate-pulse">
-            Loading Experience
-          </p>
-          <div className="text-5xl font-display-lg text-white tabular-nums">
-            {loadPercent}<span className="text-primary">%</span>
+      {!isFullyLoaded && (
+          <div ref={loaderRef} className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
+            <div ref={loaderContentRef} className="flex flex-col items-center">
+              <p className="font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-6 animate-pulse">
+                Loading Experience
+              </p>
+              <div className="text-5xl font-display-lg text-white tabular-nums">
+                {displayPercent}<span className="text-primary">%</span>
+              </div>
+              <div className="loading-bar-track mt-6">
+                <div className="loading-bar-fill" style={{ width: `${displayPercent}%` }} />
+              </div>
+            </div>
           </div>
-          <div className="loading-bar-track mt-6">
-            <div className="loading-bar-fill" style={{ width: `${loadPercent}%` }} />
-          </div>
-        </div>
-      )}
+        )}
 
       {/* â”€â”€â”€ MOBILE: Frame Sequence Hero â”€â”€â”€ */}
       {isMobile ? (
@@ -299,7 +327,7 @@ const Hero = () => {
           {isTablet && (
             <video
               ref={tabletVideoRef}
-              src="/videohero-hyper-seekable.mp4"
+              src="/videohero-seekable.mp4"
               preload="auto"
               muted
               playsInline
@@ -395,7 +423,7 @@ const Hero = () => {
           >
             <video
               ref={videoRef}
-              src={new URL('../assets/videohero-hyper-seekable.mp4', import.meta.url).href}
+              src={new URL('../assets/videohero-seekable.mp4', import.meta.url).href}
               preload="auto"
               muted
               playsInline
