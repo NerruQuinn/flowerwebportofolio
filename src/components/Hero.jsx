@@ -80,18 +80,22 @@ const Hero = () => {
           trigger: mobileSpacerRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 1,
+          scrub: true,
           onUpdate: (self) => {
-            video.currentTime = self.progress * video.duration;
-          }
+              if (video.duration) {
+                video.currentTime = self.progress * video.duration;
+                // Defer draw to next video frame if possible for performance
+                if ('requestVideoFrameCallback' in video) {
+                   video.requestVideoFrameCallback(() => drawVideoFrame());
+                } else {
+                   requestAnimationFrame(() => drawVideoFrame());
+                }
+              }
+            }
         }
       });
 
-      const loop = () => {
-        drawVideoFrame();
-        video.requestVideoFrameCallback(loop);
-      };
-      video.requestVideoFrameCallback(loop);
+      // draw will be handled by onUpdate
     };
 
     video.addEventListener('canplaythrough', initTablet, { once: true });
@@ -177,18 +181,15 @@ const Hero = () => {
           trigger: mobileSpacerRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.5,
-          smoothChildTiming: true,
+          scrub: true,
         },
-        onUpdate: (self) => {
-          obj.frame += (self.progress * (frameCount - 1) - obj.frame) * 0.15;
-          const currentFrame = frames[Math.round(obj.frame)];
-          if (currentFrame) drawFrame(currentFrame);
-        }
+        onUpdate: () => {
+            const currentFrame = frames[Math.round(obj.frame)];
+            if (currentFrame) drawFrame(currentFrame);
+          }
       });
 
-      // Optimize GSAP ticker
-      gsap.ticker.lagSmoothing(0);
+      // GSAP lag smoothing defaults are better for preventing stutter
 
       // Store in refs for resize handler access
       framesRef.current = frames;
