@@ -6,11 +6,13 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
-const frameCount = 40;
-
 const Hero = () => {
   // Detect device at top of component
+  const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
   const isMobile = window.innerWidth < 1024;
+
+  const frameCount = isTablet ? 64 : 40;
+  const frameDir = isTablet ? '/frames-tablet' : '/frames';
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -57,25 +59,25 @@ const Hero = () => {
 
     const loadFrame = async (frameNum) => {
       try {
-        const response = await fetch(`/frames/frame_${String(frameNum).padStart(3, '0')}.webp`);
+        const response = await fetch(`${frameDir}/frame_${String(frameNum).padStart(3, '0')}.webp`);
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
         frames[frameNum - 1] = bitmap;
         loadedFrames++;
-        if (loadedFrames === 40) {
+        if (loadedFrames === frameCount) {
           initScrollTrigger();
         }
       } catch (e) {
         console.error(`Failed to load frame ${frameNum}:`, e);
         loadedFrames++;
-        if (loadedFrames === 40) {
+        if (loadedFrames === frameCount) {
           initScrollTrigger();
         }
       }
     };
 
     // Load all frames
-    for (let i = 1; i <= 40; i++) {
+    for (let i = 1; i <= frameCount; i++) {
       loadFrame(i);
     }
 
@@ -116,7 +118,7 @@ const Hero = () => {
       // Create GSAP animation with ScrollTrigger
       const obj = { frame: 0 };
       gsap.to(obj, {
-        frame: 39,
+        frame: isTablet ? 63 : 39,
         snap: 'frame',
         ease: 'none',
         scrollTrigger: {
