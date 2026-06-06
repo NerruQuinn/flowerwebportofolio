@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 const Hero = () => {
   // Detect device at top of component
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const isMobile = window.innerWidth < 1024; // This now safely targets tablets too for canvas rendering
+  const isMobile = window.innerWidth < 768;
 
   const frameCount = isTablet ? 64 : 40;
   const frameDir = isTablet ? '/frames-tablet' : '/frames';
@@ -299,7 +299,7 @@ const Hero = () => {
           {isTablet && (
             <video
               ref={tabletVideoRef}
-              src="/videohero-seekable.mp4"
+              src="/videohero-hyper-seekable.mp4"
               preload="auto"
               muted
               playsInline
@@ -395,7 +395,7 @@ const Hero = () => {
           >
             <video
               ref={videoRef}
-              src={new URL('../assets/videohero-seekable.mp4', import.meta.url).href}
+              src={new URL('../assets/videohero-hyper-seekable.mp4', import.meta.url).href}
               preload="auto"
               muted
               playsInline
