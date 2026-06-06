@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import MagneticElement from './MagneticElement';
@@ -8,10 +8,11 @@ gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 const Hero = () => {
   // Detect device at top of component
-  const isMobile = window.innerWidth < 768; // Only phones use the image sequence
+  const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+  const isMobile = window.innerWidth < 1024; // This now safely targets tablets too for canvas rendering
 
-  const frameCount = 40;
-  const frameDir = '/frames';
+  const frameCount = isTablet ? 64 : 40;
+  const frameDir = isTablet ? '/frames-tablet' : '/frames';
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -20,7 +21,7 @@ const Hero = () => {
   const gradientOverlayRef = useRef(null);
   const mobileOverlayRef = useRef(null);
   const canvasRef = useRef(null);
-  
+  const tabletVideoRef = useRef(null);
   const framesRef = useRef([]);
   const objRef = useRef({ frame: 0 });
   const scaleRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
@@ -29,7 +30,7 @@ const Hero = () => {
   const isLoaded = isMobile ? mobileFramesLoaded : loadedCount === frameCount;
   const loadPercent = Math.floor((loadedCount / frameCount) * 100);
 
-  // Video metadata loader — mark as loaded when metadata is available
+  // Video metadata loader â€” mark as loaded when metadata is available
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -127,6 +128,7 @@ const Hero = () => {
           start: 'top top',
           end: 'bottom bottom',
           scrub: true,
+          smoothChildTiming: true,
         },
         onUpdate: () => {
             const currentFrame = frames[Math.round(obj.frame)];
@@ -134,14 +136,14 @@ const Hero = () => {
           }
       });
 
-      // GSAP lag smoothing defaults are better for preventing stutter
+      // GSAP lagSmoothing allowed to run
 
       // Store in refs for resize handler access
       framesRef.current = frames;
       objRef.current = obj;
     };
 
-    // Resize + orientation change handler — recalculates cached cover-fit from frames[0]
+    // Resize + orientation change handler â€” recalculates cached cover-fit from frames[0]
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -181,9 +183,9 @@ const Hero = () => {
       window.removeEventListener('resize', handleResize);
       screen.orientation?.removeEventListener('change', handleResize);
     };
-  }, [isMobile]);
+  }, [isMobile, isTablet]);
 
-  // Scroll-driven video seeking and wrapper visibility (desktop only) — GSAP ScrollTrigger
+  // Scroll-driven video seeking and wrapper visibility (desktop only) â€” GSAP ScrollTrigger
   useEffect(() => {
     if (isMobile || !isLoaded || !containerRef.current || !wrapperRef.current) return;
 
@@ -192,7 +194,7 @@ const Hero = () => {
       trigger: containerRef.current,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.3,
+      scrub: true,
       onUpdate: (self) => {
         const video = videoRef.current;
         if (!video || !video.duration) return;
@@ -201,7 +203,7 @@ const Hero = () => {
       }
     });
 
-    // 2. Wrapper visibility — hide when scrolled past hero zone
+    // 2. Wrapper visibility â€” hide when scrolled past hero zone
     ScrollTrigger.create({
       trigger: containerRef.current,
       start: 'bottom 10%',
@@ -275,7 +277,7 @@ const Hero = () => {
 
   return (
     <>
-      {/* ─── Loading Screen ─── */}
+      {/* â”€â”€â”€ Loading Screen â”€â”€â”€ */}
       {!isLoaded && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
           <p className="font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-6 animate-pulse">
@@ -290,10 +292,20 @@ const Hero = () => {
         </div>
       )}
 
-      {/* ─── MOBILE: Frame Sequence Hero ─── */}
+      {/* â”€â”€â”€ MOBILE: Frame Sequence Hero â”€â”€â”€ */}
       {isMobile ? (
         <>
-          
+          {/* Hidden tablet video for requestVideoFrameCallback */}
+          {isTablet && (
+            <video
+              ref={tabletVideoRef}
+              src="/videohero-seekable.mp4"
+              preload="auto"
+              muted
+              playsInline
+              style={{ display: 'none' }}
+            />
+          )}
 
           {/* Fixed fullscreen canvas as background */}
           <canvas
@@ -316,7 +328,7 @@ const Hero = () => {
             style={{ height: '500vh' }}
             data-nav-theme="dark"
           >
-            {/* Hero Content — z-20 above frames */}
+            {/* Hero Content â€” z-20 above frames */}
             <div className="sticky top-0 h-screen flex flex-col justify-center items-center relative px-margin-mobile text-center z-20">
               <div className="max-w-[1280px] w-full flex flex-col items-center">
                 <div style={{
@@ -331,7 +343,7 @@ const Hero = () => {
                   alignItems: 'center',
                 }}>
                   <p className="hero-anim opacity-0 font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-4 drop-shadow-xl">
-                    Hi, I'm Joshua Bart — known as Nerruquinn
+                    Hi, I'm Joshua Bart â€” known as Nerruquinn
                   </p>
                   <h1 className="hero-anim opacity-0 font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-white drop-shadow-2xl">
                     Full Stack Developer
@@ -375,7 +387,7 @@ const Hero = () => {
         </>
       ) : (
         <>
-          {/* ─── DESKTOP: Fixed Video — fades out when scrolled past hero zone ─── */}
+          {/* â”€â”€â”€ DESKTOP: Fixed Video â€” fades out when scrolled past hero zone â”€â”€â”€ */}
           <div
             ref={wrapperRef}
             className="fixed inset-0 w-full h-full bg-black overflow-hidden z-10 pointer-events-none"
@@ -419,14 +431,14 @@ const Hero = () => {
             />
           </div>
 
-          {/* ─── Scrollytelling Container (500vh tall = scroll zone for frames) ─── */}
+          {/* â”€â”€â”€ Scrollytelling Container (500vh tall = scroll zone for frames) â”€â”€â”€ */}
           <div
             ref={containerRef}
             className="relative w-full"
             style={{ height: '500vh' }}
             data-nav-theme="dark"
           >
-            {/* Hero Content — z-20 above video */}
+            {/* Hero Content â€” z-20 above video */}
             <div className="sticky top-0 h-screen flex flex-col justify-center items-center relative px-margin-mobile text-center z-20">
               <div className="max-w-[1280px] w-full flex flex-col items-center">
                 <div style={{
@@ -441,7 +453,7 @@ const Hero = () => {
                   alignItems: 'center',
                 }}>
                   <p className="hero-anim opacity-0 font-label-md text-label-md uppercase tracking-[0.4em] text-primary mb-4 drop-shadow-xl">
-                    Hi, I'm Joshua Bart — known as Nerruquinn
+                    Hi, I'm Joshua Bart â€” known as Nerruquinn
                   </p>
                   <h1 className="hero-anim opacity-0 font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-white drop-shadow-2xl">
                     Full Stack Developer
