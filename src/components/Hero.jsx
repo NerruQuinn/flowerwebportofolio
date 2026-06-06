@@ -119,21 +119,23 @@ const Hero = () => {
       const obj = { frame: 0 };
       gsap.to(obj, {
         frame: isTablet ? 63 : 39,
-        snap: 'frame',
         ease: 'none',
         scrollTrigger: {
           trigger: mobileSpacerRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.5,
+          scrub: isTablet ? 1.5 : 0.5,
+          smoothChildTiming: true,
         },
-        onUpdate: () => {
+        onUpdate: (self) => {
+          obj.frame += (self.progress * (frameCount - 1) - obj.frame) * 0.15;
           const currentFrame = frames[Math.round(obj.frame)];
-          if (currentFrame) {
-            drawFrame(currentFrame);
-          }
+          if (currentFrame) drawFrame(currentFrame);
         }
       });
+
+      // Optimize GSAP ticker
+      gsap.ticker.lagSmoothing(0);
 
       // Store in refs for resize handler access
       framesRef.current = frames;
