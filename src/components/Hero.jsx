@@ -8,11 +8,10 @@ gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 const Hero = () => {
   // Detect device at top of component
-  const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const isMobile = window.innerWidth < 1024;
+  const isMobile = window.innerWidth < 768; // Only phones use the image sequence
 
-  const frameCount = isTablet ? 64 : 40;
-  const frameDir = isTablet ? '/frames-tablet' : '/frames';
+  const frameCount = 40;
+  const frameDir = '/frames';
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -21,7 +20,7 @@ const Hero = () => {
   const gradientOverlayRef = useRef(null);
   const mobileOverlayRef = useRef(null);
   const canvasRef = useRef(null);
-  const tabletVideoRef = useRef(null);
+  
   const framesRef = useRef([]);
   const objRef = useRef({ frame: 0 });
   const scaleRef = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
@@ -50,65 +49,11 @@ const Hero = () => {
     };
   }, []);
 
-  // Tablet Canvas + requestVideoFrameCallback
-  useEffect(() => {
-    if (!isTablet || !canvasRef.current || !tabletVideoRef.current) return;
-
-    const canvas = canvasRef.current;
-    const video = tabletVideoRef.current;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const drawVideoFrame = () => {
-      const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
-      const offsetX = (canvas.width - video.videoWidth * scale) / 2;
-      const offsetY = (canvas.height - video.videoHeight * scale) / 2;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
-    };
-
-    const initTablet = () => {
-      video.pause();
-      setMobileFramesLoaded(true);
-
-      const obj = { time: 0 };
-      gsap.to(obj, {
-        time: video.duration,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: mobileSpacerRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: true,
-          onUpdate: (self) => {
-              if (video.duration) {
-                video.currentTime = self.progress * video.duration;
-                // Defer draw to next video frame if possible for performance
-                if ('requestVideoFrameCallback' in video) {
-                   video.requestVideoFrameCallback(() => drawVideoFrame());
-                } else {
-                   requestAnimationFrame(() => drawVideoFrame());
-                }
-              }
-            }
-        }
-      });
-
-      // draw will be handled by onUpdate
-    };
-
-    video.addEventListener('canplaythrough', initTablet, { once: true });
-    if (video.readyState >= 4) initTablet();
-
-    return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
-    };
-  }, [isTablet]);
+  
 
   // Mobile Canvas + ScrollTrigger frame animation (non-tablet mobile)
   useEffect(() => {
-    if (isTablet || !isMobile || !canvasRef.current || !mobileSpacerRef.current) return;
+    if (!isMobile || !canvasRef.current || !mobileSpacerRef.current) return;
 
     // Preload all 40 frames as ImageBitmap
     const frames = [];
@@ -236,7 +181,7 @@ const Hero = () => {
       window.removeEventListener('resize', handleResize);
       screen.orientation?.removeEventListener('change', handleResize);
     };
-  }, [isMobile, isTablet]);
+  }, [isMobile]);
 
   // Scroll-driven video seeking and wrapper visibility (desktop only) — GSAP ScrollTrigger
   useEffect(() => {
@@ -348,17 +293,7 @@ const Hero = () => {
       {/* ─── MOBILE: Frame Sequence Hero ─── */}
       {isMobile ? (
         <>
-          {/* Hidden tablet video for requestVideoFrameCallback */}
-          {isTablet && (
-            <video
-              ref={tabletVideoRef}
-              src="/videohero-seekable.mp4"
-              preload="auto"
-              muted
-              playsInline
-              style={{ display: 'none' }}
-            />
-          )}
+          
 
           {/* Fixed fullscreen canvas as background */}
           <canvas
